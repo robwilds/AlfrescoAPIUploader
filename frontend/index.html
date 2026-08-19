@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alfresco File Uploader</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .banner {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 4px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #856404;
+            line-height: 1.5;
+        }
+
+        .banner strong {
+            color: #533f03;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+        }
+
+        .card-title {
+            margin-top: 0;
+            font-size: 16px;
+            color: #333;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+        }
+
+        input[type="file"] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+
+        .file-input-label {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .file-input-label:hover {
+            background-color: #0056b3;
+        }
+
+        .selected-files {
+            margin-top: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 12px;
+        }
+
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .file-item:last-child {
+            border-bottom: none;
+        }
+
+        .file-name {
+            font-size: 13px;
+            color: #333;
+        }
+
+        .file-size {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background-color: #218838;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background-color: #5a6268;
+        }
+
+        .btn-info {
+            background-color: #17a2b8;
+            color: white;
+        }
+
+        .btn-info:hover:not(:disabled) {
+            background-color: #138496;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .results {
+            margin-top: 24px;
+        }
+
+        .result-item {
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .result-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .result-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #fff;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .connection-status {
+            padding: 10px 12px;
+            border-radius: 4px;
+            margin-bottom: 16px;
+            font-size: 13px;
+        }
+
+        .status-connected {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-disconnected {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        #dir-toggle-btn {
+            margin-left: auto;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: -440px;
+            width: 420px;
+            height: 100vh;
+            background: white;
+            box-shadow: -2px 0 8px rgba(0,0,0,0.15);
+            overflow-y: auto;
+            transition: right 0.3s ease;
+            z-index: 100;
+            padding: 16px;
+        }
+
+        .sidebar.open {
+            right: 0;
+        }
+
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .sidebar-header h3 {
+            font-size: 15px;
+            color: #333;
+        }
+
+        .sidebar-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #888;
+            padding: 0 4px;
+        }
+
+        .sidebar-close:hover {
+            color: #333;
+        }
+
+        .sidebar-path {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 12px;
+            word-break: break-all;
+        }
+
+        .sidebar-empty {
+            text-align: center;
+            padding: 40px 16px;
+            color: #888;
+            font-size: 13px;
+        }
+
+        .dir-entry {
+            display: flex;
+            align-items: center;
+            padding: 8px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: background-color 0.15s;
+        }
+
+        .dir-entry:hover {
+            background-color: #f8f9fa;
+        }
+
+        .dir-entry-icon {
+            font-size: 18px;
+            margin-right: 10px;
+            min-width: 22px;
+            text-align: center;
+        }
+
+        .dir-entry-name {
+            flex: 1;
+            word-break: break-all;
+        }
+
+        .dir-entry-size {
+            font-size: 12px;
+            color: #888;
+            margin-left: 8px;
+            white-space: nowrap;
+        }
+
+        .dir-entry-open {
+            font-size: 14px;
+            cursor: pointer;
+            opacity: 0.6;
+            margin-left: 4px;
+        }
+
+        .dir-entry-open:hover {
+            opacity: 1;
+        }
+
+        .dir-nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 10px;
+            background-color: #e9ecef;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #495057;
+            cursor: pointer;
+            margin-bottom: 12px;
+        }
+
+        .dir-nav-btn:hover {
+            background-color: #dee2e6;
+        }
+
+        .dir-loading {
+            text-align: center;
+            padding: 40px 16px;
+            color: #6c757d;
+            font-size: 13px;
+        }
+
+        .docker-note {
+            background-color: #e7f1ff;
+            border: 1px solid #b3d7ff;
+            border-radius: 4px;
+            padding: 8px 12px;
+            margin-top: 6px;
+            font-size: 12px;
+            color: #004085;
+            line-height: 1.5;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 50px;
+            z-index: 200;
+            background: none;
+            border: 2px solid #ddd;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+
+        .theme-toggle:hover {
+            background-color: #f0f0f0;
+        }
+
+        body.dark .theme-toggle {
+            border-color: #555;
+            color: #f0f0f0;
+        }
+
+        body.dark .theme-toggle:hover {
+            background-color: #333;
+        }
+        /* Dark mode */
+
+        body.dark .card {
+            border: 1px solid #555;
+            background-color: #333;
+        }
+
+        body.dark .card-title {
+            color: #eee;
+            border-bottom-color: #555;
+        }
+
+        body.dark {
+            background-color: #1a1a2e;
+        }
+
+        body.dark .container {
+            background: #16213e;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        body.dark .banner {
+            background-color: #3a2a00;
+            border-color: #665500;
+            color: #ffd966;
+        }
+
+        body.dark .banner strong {
+            color: #ffdf7f;
+        }
+
+        body.dark h1 {
+            color: #e0e0e0;
+        }
+
+        body.dark label {
+            color: #b0b0b0;
+        }
+
+        body.dark input[type="text"],
+        body.dark input[type="password"] {
+            background-color: #1a1a2e;
+            border-color: #444;
+            color: #e0e0e0;
+        }
+
+        body.dark input[type="text"]:focus,
+        body.dark input[type="password"]:focus {
+            border-color: #4dabf7;
+            box-shadow: 0 0 0 2px rgba(77,171,247,0.25);
+        }
+
+        body.dark .file-item {
+            border-bottom-color: #333;
+        }
+
+        body.dark .file-name {
+            color: #e0e0e0;
+        }
+
+        body.dark .btn-info {
+            background-color: #0d6e7a;
+        }
+
+        body.dark .btn-info:hover:not(:disabled) {
+            background-color: #0a5a65;
+        }
+
+        body.dark .connection-status {
+            color: #c8c8c8;
+        }
+
+        body.dark .status-connected {
+            background-color: #1a3a2a;
+            border-color: #2d5a3d;
+            color: #7ddf7d;
+        }
+
+        body.dark .status-disconnected {
+            background-color: #3a1a1a;
+            border-color: #5a2d2d;
+            color: #df7d7d;
+        }
+
+        body.dark .result-success {
+            background-color: #1a3a2a;
+            border-color: #2d5a3d;
+            color: #7ddf7d;
+        }
+
+        body.dark .result-error {
+            background-color: #3a1a1a;
+            border-color: #5a2d2d;
+            color: #df7d7d;
+        }
+
+        body.dark .sidebar {
+            background: #16213e;
+            box-shadow: -2px 0 8px rgba(0,0,0,0.4);
+        }
+
+        body.dark .sidebar-header {
+            border-bottom-color: #444;
+        }
+
+        body.dark .sidebar-header h3 {
+            color: #e0e0e0;
+        }
+
+        body.dark .sidebar-close {
+            color: #888;
+        }
+
+        body.dark .sidebar-close:hover {
+            color: #e0e0e0;
+        }
+
+        body.dark .sidebar-path {
+            color: #888;
+        }
+
+        body.dark .dir-entry:hover {
+            background-color: #1a2744;
+        }
+
+        body.dark .dir-entry-name {
+            color: #e0e0e0;
+        }
+
+        body.dark .dir-nav-btn {
+            background-color: #1a1a2e;
+            border-color: #444;
+            color: #b0b0b0;
+        }
+
+        body.dark .dir-nav-btn:hover {
+            background-color: #252540;
+        }
+
+        body.dark .docker-note {
+            background-color: #0d2137;
+            border-color: #1a4a6e;
+            color: #7fbcff;
+        }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" id="theme-toggle" title="Toggle dark mode"></button>
+
+    <div class="container">
+        <div class="banner">
+            <strong>Demo Notice:</strong> This demo utilizes a sample custom UI to help showcase what is possible with Docker and the Alfresco platform. This is not a productized UI/UX that is delivered as part of Alfresco Community.
+        </div>
+        <h1>Alfresco File Uploader</h1>
+
+        <div class="card">
+            <h2 class="card-title">Connection</h2>
+
+            <div class="form-group">
+                <label for="alfresco-url">Alfresco Server URL</label>
+                <input type="text" id="alfresco-url" placeholder="https://your-alfresco-server.com" value="http://localhost:8080">
+                <div class="docker-note">If running in Docker, use <strong>host.docker.internal</strong> instead of <strong>localhost</strong> to reach services on your host machine.</div>
+            </div>
+
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" placeholder="admin">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="admin">
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 class="card-title">Folder &amp; API</h2>
+
+            <div class="form-group">
+                <label for="target-folder">Target Folder Node ID</label>
+                <input type="text" id="target-folder" placeholder="-my- (default)" value="-my-">
+            </div>
+
+            <div class="form-group">
+                <label for="api-path">API Path</label>
+                <input type="text" id="api-path" placeholder="/alfresco/api/-default-/public/alfresco/versions/1" value="/alfresco/api/-default-/public/alfresco/versions/1">
+            </div>
+
+            <div class="btn-group">
+                <button class="btn btn-secondary" id="test-connection-btn">Test Connection</button>
+                <button class="btn btn-info" id="list-folder-btn">Browse Folder</button>
+            </div>
+
+            <div id="connection-status" class="connection-status hidden"></div>
+        </div>
+
+        <div class="form-group">
+            <label>Select Files</label>
+            <div class="file-input-wrapper">
+                <input type="file" id="file-input" multiple>
+                <span class="file-input-label">Choose Files</span>
+            </div>
+            <div style="margin-top: 8px;">
+                <input type="file" id="folder-input" webkitdirectory multiple style="display: none;">
+                <label for="folder-input" class="btn btn-secondary" style="padding: 8px 16px; font-size: 13px; display: inline-block; margin: 0; cursor: pointer;">
+                    Select Folder (All Files)
+                </label>
+            </div>
+        </div>
+
+        <div id="selected-files" class="selected-files hidden"></div>
+
+        <div class="btn-group">
+            <button class="btn btn-primary" id="upload-btn" disabled>
+                <span class="spinner hidden" id="upload-spinner"></span>
+                Upload Files
+            </button>
+        </div>
+
+        <div id="results" class="results"></div>
+    </div>
+
+    <div class="sidebar" id="dir-sidebar">
+        <div class="sidebar-header">
+            <h3>Folder Contents</h3>
+            <button class="sidebar-close" id="sidebar-close">&times;</button>
+        </div>
+        <button class="dir-nav-btn hidden" id="dir-back-btn">&#8592; Back</button>
+        <div class="sidebar-path" id="dir-current-path"></div>
+        <div id="dir-entries"></div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('file-input');
+        const selectedFilesDiv = document.getElementById('selected-files');
+        const uploadBtn = document.getElementById('upload-btn');
+        const uploadSpinner = document.getElementById('upload-spinner');
+        const resultsDiv = document.getElementById('results');
+        const testConnectionBtn = document.getElementById('test-connection-btn');
+        const connectionStatus = document.getElementById('connection-status');
+        const folderInput = document.getElementById('folder-input');
+        const listFolderBtn = document.getElementById('list-folder-btn');
+        const dirSidebar = document.getElementById('dir-sidebar');
+        const dirEntries = document.getElementById('dir-entries');
+        const dirCurrentPath = document.getElementById('dir-current-path');
+        const dirBackBtn = document.getElementById('dir-back-btn');
+        const sidebarClose = document.getElementById('sidebar-close');
+
+        let selectedFiles = [];
+        let currentFolderId = '-my-';
+        let folderHistory = [];
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0 || !bytes) return '';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function getCredentials() {
+            return {
+                alfrescoUrl: document.getElementById('alfresco-url').value.trim(),
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value,
+                apiPath: document.getElementById('api-path').value.trim() || '/alfresco/api/-default-/public/alfresco/versions/1',
+            };
+        }
+
+        fileInput.addEventListener('change', (e) => {
+            selectedFiles = Array.from(e.target.files);
+            updateFileList();
+            uploadBtn.disabled = selectedFiles.length === 0;
+        });
+
+        folderInput.addEventListener('change', (e) => {
+            selectedFiles = Array.from(e.target.files);
+            updateFileList();
+            uploadBtn.disabled = selectedFiles.length === 0;
+        });
+
+        function updateFileList() {
+            if (selectedFiles.length === 0) {
+                selectedFilesDiv.classList.add('hidden');
+                return;
+            }
+
+            selectedFilesDiv.classList.remove('hidden');
+            selectedFilesDiv.innerHTML = selectedFiles.map(file => `
+                <div class="file-item">
+                    <span class="file-name">${escapeHtml(file.name)}</span>
+                    <span class="file-size">${formatFileSize(file.size)}</span>
+                </div>
+            `).join('');
+        }
+
+        async function testConnection() {
+            const creds = getCredentials();
+
+            if (!creds.alfrescoUrl) {
+                showConnectionStatus('Please enter Alfresco server URL', false);
+                return;
+            }
+
+            testConnectionBtn.disabled = true;
+            testConnectionBtn.textContent = 'Testing...';
+
+            try {
+                const response = await fetch('/api/test-connection', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        alfresco_url: creds.alfrescoUrl,
+                        username: creds.username,
+                        password: creds.password,
+                        api_path: creds.apiPath,
+                    }),
+                });
+
+                const data = await response.json();
+                const msg = data.message || (data.success ? 'Connected' : data.error);
+                const urlInfo = data.tested_url ? ` (tested: ${data.tested_url})` : '';
+                showConnectionStatus(msg + urlInfo, data.success);
+            } catch (error) {
+                showConnectionStatus('Connection failed: ' + error.message, false);
+            } finally {
+                testConnectionBtn.disabled = false;
+                testConnectionBtn.textContent = 'Test Connection';
+            }
+        }
+
+        function showConnectionStatus(message, success) {
+            connectionStatus.textContent = message;
+            connectionStatus.className = 'connection-status ' + (success ? 'status-connected' : 'status-disconnected');
+            connectionStatus.classList.remove('hidden');
+        }
+
+        async function uploadFiles() {
+            const creds = getCredentials();
+            const targetFolder = document.getElementById('target-folder').value.trim() || '-my-';
+
+            if (!creds.alfrescoUrl) {
+                alert('Please enter Alfresco server URL');
+                return;
+            }
+
+            if (selectedFiles.length === 0) {
+                alert('Please select files to upload');
+                return;
+            }
+
+            uploadBtn.disabled = true;
+            uploadSpinner.classList.remove('hidden');
+            resultsDiv.innerHTML = '';
+
+            const formData = new FormData();
+            formData.append('alfresco_url', creds.alfrescoUrl);
+            formData.append('username', creds.username);
+            formData.append('password', creds.password);
+            formData.append('target_folder', targetFolder);
+            formData.append('api_path', creds.apiPath);
+
+            selectedFiles.forEach(file => {
+                formData.append('files', file);
+            });
+
+            try {
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const data = await response.json();
+                displayResults(data.results);
+                resultsDiv.querySelectorAll('.open-in-alfresco').forEach(el => {
+                    el.onclick = (e) => {
+                        e.stopPropagation();
+                        window.open(el.dataset.shareUrl, '_blank');
+                    };
+                });
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="result-item result-error">Upload failed: ${escapeHtml(error.message)}</div>`;
+            } finally {
+                uploadBtn.disabled = false;
+                uploadSpinner.classList.add('hidden');
+            }
+        }
+
+        function displayResults(results) {
+            if (!results || !Array.isArray(results)) return;
+            resultsDiv.innerHTML = results.map(result => {
+                if (result.status === 'success') {
+                    const nodeId = result.node_id || 'unknown';
+                    const shareUrl = result.share_url || '';
+                    const openBtn = shareUrl
+                        ? `<button class="btn-link" type="button" data-share-url="${shareUrl}">Open in Alfresco</button>` : '';
+                    return `<div class="result-item result-success">
+                        <strong>${escapeHtml(result.file)}</strong>: Uploaded successfully (Node ID: ${escapeHtml(nodeId)})
+                        <br><small>Find it in Alfresco at: /nodes/${escapeHtml(nodeId)}</small>
+                        ${openBtn}
+                    </div>`;
+                } else {
+                    return `<div class="result-item result-error">
+                        <strong>${escapeHtml(result.file)}</strong>: Error: ${escapeHtml(result.error || 'Unknown error')}
+                    </div>`;
+                }
+            }).join('');
+        }
+
+        async function openFolderBrowser() {
+            dirSidebar.classList.add('open');
+            folderHistory = [];
+            dirBackBtn.classList.add('hidden');
+            currentFolderId = document.getElementById('target-folder').value.trim() || '-my-';
+            await listFolderContents(currentFolderId);
+        }
+
+        function closeFolderBrowser() {
+            dirSidebar.classList.remove('open');
+        }
+
+        async function listFolderContents(folderId) {
+            const creds = getCredentials();
+            const targetFolderInput = document.getElementById('target-folder').value.trim() || '-my-';
+
+            dirCurrentPath.textContent = folderId;
+            dirEntries.innerHTML = '<div class="dir-loading">Loading...</div>';
+
+            try {
+                const params = new URLSearchParams({
+                    alfresco_url: creds.alfrescoUrl,
+                    target_folder: folderId,
+                    api_path: creds.apiPath,
+                    username: creds.username,
+                    password: creds.password,
+                });
+
+                const response = await fetch(`/api/list-folder?${params.toString()}`);
+                const data = await response.json();
+
+                if (!data.success) {
+                    dirEntries.innerHTML = `<div class="sidebar-empty">Error: ${escapeHtml(data.error || 'Unknown error')}</div>`;
+                    return;
+                }
+
+                if (!data.entries || data.entries.length === 0) {
+                    dirEntries.innerHTML = '<div class="sidebar-empty">This folder is empty.</div>';
+                    return;
+                }
+
+                const folders = data.entries.filter(e => e.isFolder);
+                const files = data.entries.filter(e => !e.isFolder);
+                let html = '';
+
+                folders.forEach(entry => {
+                    html += `<div class="dir-entry" data-node-id="${escapeHtml(entry.nodeId)}" data-share-url="${escapeHtml(entry.shareUrl)}" data-name="${escapeHtml(entry.name)}" onclick="navigateInto(this.dataset.nodeId, this.dataset.name)">
+                        <span class="dir-entry-icon">📁</span>
+                        <span class="dir-entry-name">${escapeHtml(entry.name)}</span>
+                        <span class="dir-entry-open" title="Open in Alfresco" onclick="event.stopPropagation(); window.open(this.dataset.shareUrl, '_blank')"><span class="invisible">×</span>🔗</span>
+                    </div>`;
+                });
+
+                files.forEach(entry => {
+                    html += `<div class="dir-entry" data-node-id="${escapeHtml(entry.nodeId)}" data-share-url="${escapeHtml(entry.shareUrl)}" onclick="event.stopPropagation(); window.open(this.dataset.shareUrl, '_blank')">
+                        <span class="dir-entry-icon">📄</span>
+                        <span class="dir-entry-name">${escapeHtml(entry.name)}</span>
+                        <span class="dir-entry-size">${entry.size ? formatFileSize(entry.size) : ''}</span>
+                    </div>`;
+                });
+
+                dirEntries.innerHTML = html;
+
+            } catch (error) {
+                dirEntries.innerHTML = `<div class="sidebar-empty">Error: ${escapeHtml(error.message)}</div>`;
+            }
+        }
+
+        function navigateInto(nodeId, name) {
+            folderHistory.push({ id: currentFolderId, name: name });
+            currentFolderId = nodeId;
+            dirBackBtn.classList.remove('hidden');
+            dirCurrentPath.textContent = nodeId;
+            listFolderContents(nodeId);
+        }
+
+        function openInAlfresco(nodeId) {
+            const url = document.getElementById('alfresco-url').value.trim();
+            const origin = new URL(url).origin;
+            const shareUrl = `${origin}/share/page/document-details?nodeRef=${encodeURIComponent(nodeId)}`;
+            window.open(shareUrl, '_blank');
+        }
+
+        function navigateBack() {
+            if (folderHistory.length === 0) return;
+            const prev = folderHistory.pop();
+            currentFolderId = prev.id;
+            dirCurrentPath.textContent = currentFolderId;
+            listFolderContents(currentFolderId);
+
+            if (folderHistory.length === 0) {
+                dirBackBtn.classList.add('hidden');
+            }
+        }
+
+        listFolderBtn.addEventListener('click', openFolderBrowser);
+        testConnectionBtn.addEventListener('click', testConnection);
+        uploadBtn.addEventListener('click', uploadFiles);
+        sidebarClose.addEventListener('click', closeFolderBrowser);
+        dirBackBtn.addEventListener('click', navigateBack);
+
+        // Theme toggle
+        const themeToggle = document.getElementById('theme-toggle');
+        const STORAGE_KEY = 'alfresco-uploader-theme';
+
+        function setIcon() {
+            themeToggle.textContent = document.body.classList.contains('dark') ? '\u2600' : '\u{1F319}';
+        }
+
+        function applyTheme(dark) {
+            document.body.classList.toggle('dark', dark);
+            setIcon();
+            localStorage.setItem(STORAGE_KEY, dark ? 'dark' : 'light');
+        }
+
+        // Restore saved theme, default to dark
+        const saved = localStorage.getItem(STORAGE_KEY);
+        applyTheme(saved !== 'light');
+
+        themeToggle.addEventListener('click', () => {
+            applyTheme(!document.body.classList.contains('dark'));
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+services:
+  alfresco-uploader:
+    build: .
+    ports:
+      - "5001:5001"
+    container_name: alfresco-uploader
+    restart: unless-stopped
