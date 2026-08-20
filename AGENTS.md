@@ -24,6 +24,9 @@ docker compose up --build
 
 `start.sh` and `start.bat` prompt for local vs Docker on launch.
 
+- **Docker start**: auto-starts the Docker daemon if it's not running (macOS runs `open -a Docker`; Linux runs `sudo dockerd`), then auto-launches the container if not already running, opens the browser, and builds if needed. On Windows, Ctrl+C stops and removes the container. Re-running while the container is up just reopens it without rebuilding.
+- **Local start**: installs dependencies (if missing), then runs the Flask app.
+
 ## Architecture
 
 - **Single Python app**: `backend.py` is the only code file. Flask handles all logic.

@@ -24,9 +24,15 @@ Then open http://localhost:5001 in your browser.
 # Linux: start.sh
 
 # Option 2: Run Docker (recommended for production)
-docker build -t alfresco-uploader .
-docker run -p 5001:5001 alfresco-uploader
+./start.sh   # prompts for Local vs Docker; Docker auto-launches
 ```
+
+### Start scripts behavior
+
+Both `start.sh` (Linux/macOS) and `start.bat` (Windows) prompt for **Local (Python)** or **Docker**, then:
+
+- **Docker**: auto-launches the container if not already running, auto-starts the Docker daemon when needed, and opens the browser. Re-running while the container is up just reopens it without rebuilding. On Windows, Ctrl+C stops and removes the container.
+- **Local**: installs dependencies (if missing), then runs the Flask app on http://localhost:5001.
 
 ## Features
 
