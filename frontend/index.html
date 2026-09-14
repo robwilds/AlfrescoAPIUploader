@@ -429,6 +429,29 @@
         body.dark .theme-toggle:hover {
             background-color: #333;
         }
+
+        .theme-icon {
+            display: inline;
+        }
+
+        .theme-label {
+            display: none;
+            font-size: 12px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        body.dark .theme-label {
+            color: #f0f0f0;
+        }
+
+        .theme-toggle:hover .theme-icon {
+            display: none;
+        }
+
+        .theme-toggle:hover .theme-label {
+            display: inline;
+        }
         /* Dark mode */
 
         body.dark .card {
@@ -576,7 +599,10 @@
     </style>
 </head>
 <body>
-    <button class="theme-toggle" id="theme-toggle" title="Toggle dark mode"></button>
+    <button class="theme-toggle" id="theme-toggle" title="Toggle theme">
+        <span class="theme-icon"></span>
+        <span class="theme-label"></span>
+    </button>
 
     <div class="container">
         <div class="banner">
@@ -947,16 +973,19 @@
 
         // Theme toggle
         const themeToggle = document.getElementById('theme-toggle');
+        const iconEl = themeToggle.querySelector('.theme-icon');
+        const labelEl = themeToggle.querySelector('.theme-label');
         const STORAGE_KEY = 'alfresco-uploader-theme';
 
-        function setIcon() {
-            themeToggle.textContent = document.body.classList.contains('dark') ? '\u2600' : '\u{1F319}';
+        function setTheme(dark) {
+            document.body.classList.toggle('dark', dark);
+            iconEl.textContent = dark ? '🌙' : '☀️';
+            labelEl.textContent = dark ? 'Light' : 'Dark';
+            localStorage.setItem(STORAGE_KEY, dark ? 'dark' : 'light');
         }
 
         function applyTheme(dark) {
-            document.body.classList.toggle('dark', dark);
-            setIcon();
-            localStorage.setItem(STORAGE_KEY, dark ? 'dark' : 'light');
+            setTheme(dark);
         }
 
         // Restore saved theme, default to dark
@@ -964,7 +993,7 @@
         applyTheme(saved !== 'light');
 
         themeToggle.addEventListener('click', () => {
-            applyTheme(!document.body.classList.contains('dark'));
+            setTheme(!document.body.classList.contains('dark'));
         });
     </script>
 </body>

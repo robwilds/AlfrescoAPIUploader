@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(echo \"===EXIT $?===\")",
+      "Read(//Users/robertwilds/.codex/**)",
+      "Bash(bash -n start.sh)"
+    ]
+  }
+}
